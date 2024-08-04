@@ -55,4 +55,81 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getFilteredQuotes() {
-   
+    const selectedCategory = categoryFilter.value;
+    if (selectedCategory === 'all') {
+      return quotes;
+    }
+    return quotes.filter(quote => quote.category === selectedCategory);
+  }
+
+  function filterQuotes() {
+    showRandomQuote();
+  }
+
+  function exportToJsonFile() {
+    const dataStr = JSON.stringify(quotes, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", url);
+    downloadAnchorNode.setAttribute("download", "quotes.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importFromJsonFile(event) {
+    const fileReader = new FileReader();
+    fileReader.onload = function(event) {
+      const importedQuotes = JSON.parse(event.target.result);
+      quotes.push(...importedQuotes);
+      localStorage.setItem('quotes', JSON.stringify(quotes));
+      updateCategoryFilter();
+      alert('Quotes imported successfully!');
+    };
+    fileReader.readAsText(event.target.files[0]);
+  }
+
+  async function fetchQuotesFromServer() {
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+      const serverQuotes = await response.json();
+
+      // Assuming serverQuotes is an array of objects with a 'text' property and using 'Server' as a category
+      const serverData = serverQuotes.map(post => ({ text: post.title, category: 'Server' }));
+
+      return serverData;
+    } catch (error) {
+      console.error('Error fetching quotes from server:', error);
+      return [];
+    }
+  }
+
+  async function syncQuotesWithServer() {
+    try {
+      // Fetching server quotes
+      const serverQuotes = await fetchQuotesFromServer();
+
+      // Conflict resolution: server data takes precedence
+      const mergedQuotes = [...serverQuotes, ...quotes];
+      quotes = Array.from(new Set(mergedQuotes.map(q => JSON.stringify(q)))).map(q => JSON.parse(q));
+
+      localStorage.setItem('quotes', JSON.stringify(quotes));
+      updateCategoryFilter();
+      alert('Quotes synced with server successfully!');
+    } catch (error) {
+      console.error('Error syncing with server:', error);
+    }
+  }
+
+  // Initial setup
+  newQuoteButton.addEventListener('click', showRandomQuote);
+  createAddQuoteForm();
+  exportQuotesButton.addEventListener('click', exportToJsonFile);
+  updateCategoryFilter();
+  filterQuotes();  // To display an initial quote based on the default category
+
+  // Sync with server periodically
+  setInterval(syncQuotesWithServer, 60000);  // Sync every minute
+});
