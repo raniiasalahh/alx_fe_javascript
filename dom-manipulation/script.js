@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const addQuoteButton = document.getElementById('addQuote');
   const categoryFilter = document.getElementById('categoryFilter');
   const exportQuotesButton = document.getElementById('exportQuotes');
+  const importFileInput = document.getElementById('importFile');
 
   function showRandomQuote() {
     const filteredQuotes = getFilteredQuotes();
@@ -52,6 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
       option.textContent = category;
       categoryFilter.appendChild(option);
     });
+    // Restore the last selected filter
+    const lastSelectedCategory = localStorage.getItem('selectedCategory') || 'all';
+    categoryFilter.value = lastSelectedCategory;
   }
 
   function getFilteredQuotes() {
@@ -63,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function filterQuotes() {
+    const selectedCategory = categoryFilter.value;
+    localStorage.setItem('selectedCategory', selectedCategory);
     showRandomQuote();
   }
 
@@ -127,6 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
   newQuoteButton.addEventListener('click', showRandomQuote);
   createAddQuoteForm();
   exportQuotesButton.addEventListener('click', exportToJsonFile);
+  importFileInput.addEventListener('change', importFromJsonFile);
+  categoryFilter.addEventListener('change', filterQuotes);
   updateCategoryFilter();
   filterQuotes();  // To display an initial quote based on the default category
 
