@@ -21,12 +21,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function postQuotesToServer() {
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quotes),
+      });
+
+      if (response.ok) {
+        const serverResponse = await response.json();
+        console.log('Data posted successfully:', serverResponse);
+        showNotification('Quotes posted to server successfully!');
+      } else {
+        console.error('Error posting quotes to server:', response.statusText);
+        showNotification('Failed to post quotes to server.');
+      }
+    } catch (error) {
+      console.error('Error posting quotes to server:', error);
+      showNotification('Failed to post quotes to server.');
+    }
+  }
+
   async function syncQuotesWithServer() {
     try {
-      // Fetch server quotes
       const serverQuotes = await fetchQuotesFromServer();
-      
-      // Combine server and local quotes, assuming server data takes precedence
       const combinedQuotes = [...serverQuotes, ...quotes];
       quotes = Array.from(new Set(combinedQuotes.map(q => JSON.stringify(q)))).map(q => JSON.parse(q));
       
@@ -80,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newQuoteText').value = '';
       document.getElementById('newQuoteCategory').value = '';
       showNotification('Quote added successfully!');
-      syncQuotesWithServer();
+      postQuotesToServer(); // Post the updated quotes to the server
     } else {
       showNotification('Please enter both quote text and category.');
     }
