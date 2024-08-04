@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return serverQuotes.map(post => ({ text: post.title, category: 'Server' }));
     } catch (error) {
       console.error('Error fetching quotes from server:', error);
+      showNotification('Failed to fetch quotes from server.');
       return [];
     }
   }
@@ -33,8 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok) {
         const serverResponse = await response.json();
-        console.log('Data posted successfully:', serverResponse);
         showNotification('Quotes posted to server successfully!');
+        console.log('Data posted successfully:', serverResponse);
       } else {
         console.error('Error posting quotes to server:', response.statusText);
         showNotification('Failed to post quotes to server.');
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showNotification('Quotes synced with server successfully!');
     } catch (error) {
       console.error('Error syncing with server:', error);
+      showNotification('Failed to sync quotes with server.');
     }
   }
 
@@ -68,11 +70,16 @@ document.addEventListener('DOMContentLoaded', () => {
     notification.style.backgroundColor = 'lightgreen';
     notification.style.padding = '10px';
     notification.style.borderRadius = '5px';
+    notification.style.zIndex = '1000';
     document.body.appendChild(notification);
     
     setTimeout(() => {
       notification.remove();
     }, 5000);
+  }
+
+  function showAlert(message) {
+    alert(message);
   }
 
   function showRandomQuote() {
@@ -145,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
     URL.revokeObjectURL(url);
+    showNotification('Quotes exported successfully!');
   }
 
   function importFromJsonFile(event) {
