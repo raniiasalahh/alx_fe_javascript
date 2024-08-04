@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newQuoteText').value = '';
       document.getElementById('newQuoteCategory').value = '';
       alert('Quote added successfully!');
+      syncQuotesWithServer();
     } else {
       alert('Please enter both quote text and category.');
     }
@@ -87,10 +88,36 @@ document.addEventListener('DOMContentLoaded', () => {
     fileReader.readAsText(event.target.files[0]);
   }
 
+  async function syncQuotesWithServer() {
+    try {
+      // Fetching server quotes
+      const serverResponse = await fetch('https://jsonplaceholder.typicode.com/posts');
+      const serverQuotes = await serverResponse.json();
+
+      // Assume serverQuotes is an array of quotes from the server
+      // For demonstration, using a subset of the data structure
+      const serverData = serverQuotes.map(post => ({ text: post.title, category: 'Server' }));
+
+      // Conflict resolution: server data takes precedence
+      const mergedQuotes = [...serverData, ...quotes];
+      quotes = Array.from(new Set(mergedQuotes.map(q => JSON.stringify(q)))).map(q => JSON.parse(q));
+
+      localStorage.setItem('quotes', JSON.stringify(quotes));
+      updateCategoryFilter();
+      alert('Quotes synced with server successfully!');
+
+    } catch (error) {
+      console.error('Error syncing with server:', error);
+    }
+  }
+
   // Initial setup
   newQuoteButton.addEventListener('click', showRandomQuote);
   createAddQuoteForm();
   exportQuotesButton.addEventListener('click', exportQuotes);
   updateCategoryFilter();
   filterQuotes();  // To display an initial quote based on the default category
+
+  // Sync with server periodically
+  setInterval(syncQuotesWithServer, 60000);  // Sync every minute
 });
