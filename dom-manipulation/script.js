@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (newQuoteText && newQuoteCategory) {
       quotes.push({ text: newQuoteText, category: newQuoteCategory });
       localStorage.setItem('quotes', JSON.stringify(quotes));
-      updateCategoryFilter();
+      populateCategories();
       document.getElementById('newQuoteText').value = '';
       document.getElementById('newQuoteCategory').value = '';
       alert('Quote added successfully!');
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function updateCategoryFilter() {
+  function populateCategories() {
     const categories = Array.from(new Set(quotes.map(quote => quote.category)));
     categoryFilter.innerHTML = '<option value="all">All Categories</option>';
     categories.forEach(category => {
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const importedQuotes = JSON.parse(event.target.result);
       quotes.push(...importedQuotes);
       localStorage.setItem('quotes', JSON.stringify(quotes));
-      updateCategoryFilter();
+      populateCategories();
       alert('Quotes imported successfully!');
     };
     fileReader.readAsText(event.target.files[0]);
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       quotes = Array.from(new Set(mergedQuotes.map(q => JSON.stringify(q)))).map(q => JSON.parse(q));
 
       localStorage.setItem('quotes', JSON.stringify(quotes));
-      updateCategoryFilter();
+      populateCategories();
       alert('Quotes synced with server successfully!');
     } catch (error) {
       console.error('Error syncing with server:', error);
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   exportQuotesButton.addEventListener('click', exportToJsonFile);
   importFileInput.addEventListener('change', importFromJsonFile);
   categoryFilter.addEventListener('change', filterQuotes);
-  updateCategoryFilter();
+  populateCategories();
   filterQuotes();  // To display an initial quote based on the default category
 
   // Sync with server periodically
